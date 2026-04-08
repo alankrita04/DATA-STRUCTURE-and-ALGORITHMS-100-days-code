@@ -1,0 +1,67 @@
+//Problem: Count Nodes in Linked List
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node structure
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+// Create new node
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Append node
+struct Node* append(struct Node* head, int data) {
+    struct Node* newNode = createNode(data);
+
+    if (head == NULL) {
+        return newNode;
+    }
+
+    struct Node* temp = head;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+
+    temp->next = newNode;
+    return head;
+}
+
+// Count nodes
+int countNodes(struct Node* head) {
+    int count = 0;
+    struct Node* temp = head;
+
+    while (temp != NULL) {
+        count++;
+        temp = temp->next;
+    }
+
+    return count;
+}
+
+// Main function
+int main() {
+    int n;
+    scanf("%d", &n);
+
+    struct Node* head = NULL;
+
+    for (int i = 0; i < n; i++) {
+        int x;
+        scanf("%d", &x);
+        head = append(head, x);
+    }
+
+    int result = countNodes(head);
+    printf("%d\n", result);
+
+    return 0;
+}
