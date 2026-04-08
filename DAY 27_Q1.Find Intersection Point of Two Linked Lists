@@ -1,0 +1,108 @@
+//Problem: Find Intersection Point of Two Linked Lists - Implement using linked list with dynamic memory allocation.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->next = NULL;
+    return newNode;
+}
+
+struct Node* append(struct Node* head, int data) {
+    struct Node* newNode = createNode(data);
+
+    if (head == NULL) return newNode;
+
+    struct Node* temp = head;
+    while (temp->next != NULL)
+        temp = temp->next;
+
+    temp->next = newNode;
+    return head;
+}
+
+int getLength(struct Node* head) {
+    int count = 0;
+    while (head != NULL) {
+        count++;
+        head = head->next;
+    }
+    return count;
+}
+
+int findIntersection(struct Node* head1, struct Node* head2) {
+    int len1 = getLength(head1);
+    int len2 = getLength(head2);
+
+    int diff = abs(len1 - len2);
+
+    if (len1 > len2) {
+        for (int i = 0; i < diff; i++)
+            head1 = head1->next;
+    } else {
+        for (int i = 0; i < diff; i++)
+            head2 = head2->next;
+    }
+
+    while (head1 != NULL && head2 != NULL) {
+        if (head1 == head2) {
+            return head1->data;
+        }
+        head1 = head1->next;
+        head2 = head2->next;
+    }
+
+    return -1; 
+}
+
+void createIntersection(struct Node* head1, struct Node* head2) {
+    while (head1 != NULL) {
+        struct Node* temp = head2;
+        while (temp != NULL) {
+            if (temp->data == head1->data) {
+                // connect
+                temp->next = head1->next;
+                return;
+            }
+            temp = temp->next;
+        }
+        head1 = head1->next;
+    }
+}
+
+int main() {
+    int n, m;
+    struct Node *list1 = NULL, *list2 = NULL;
+
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++) {
+        int x;
+        scanf("%d", &x);
+        list1 = append(list1, x);
+    }
+
+    scanf("%d", &m);
+    for (int i = 0; i < m; i++) {
+        int x;
+        scanf("%d", &x);
+        list2 = append(list2, x);
+    }
+
+    createIntersection(list1, list2);
+
+    int result = findIntersection(list1, list2);
+
+    if (result == -1)
+        printf("No Intersection\n");
+    else
+        printf("%d\n", result);
+
+    return 0;
+}
