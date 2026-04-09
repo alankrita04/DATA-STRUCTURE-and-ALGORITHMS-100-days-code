@@ -1,0 +1,93 @@
+//Problem: Evaluate Postfix Expression - Implement using linked list with dynamic memory allocation.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+// Node structure
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+// Push
+void push(struct Node** top, int value) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = value;
+    newNode->next = *top;
+    *top = newNode;
+}
+
+// Pop (safe)
+int pop(struct Node** top) {
+    if (*top == NULL) {
+        printf("Stack Underflow\n");
+        exit(1);  // stop program (important fix)
+    }
+    struct Node* temp = *top;
+    int value = temp->data;
+    *top = temp->next;
+    free(temp);
+    return value;
+}
+
+// Evaluate postfix
+int evaluatePostfix(char* expr) {
+    struct Node* stack = NULL;
+    int i = 0;
+
+    while (expr[i] != '\0') {
+
+        // Skip spaces and newline
+        if (expr[i] == ' ' || expr[i] == '\n') {
+            i++;
+            continue;
+        }
+
+        // Operand
+        if (isdigit(expr[i])) {
+            int num = 0;
+
+            while (isdigit(expr[i])) {
+                num = num * 10 + (expr[i] - '0');
+                i++;
+            }
+
+            push(&stack, num);
+        }
+        // Operator
+        else {
+            int val2 = pop(&stack);
+            int val1 = pop(&stack);
+            int result;
+
+            switch (expr[i]) {
+                case '+': result = val1 + val2; break;
+                case '-': result = val1 - val2; break;
+                case '*': result = val1 * val2; break;
+                case '/': result = val1 / val2; break;
+                default:
+                    printf("Invalid operator\n");
+                    exit(1);
+            }
+
+            push(&stack, result);
+            i++;
+        }
+    }
+
+    return pop(&stack);
+}
+
+// Main
+int main() {
+    char expr[100];
+
+    fgets(expr, sizeof(expr), stdin);
+
+    int result = evaluatePostfix(expr);
+
+    printf("%d\n", result);
+
+    return 0;
+}
