@@ -1,0 +1,125 @@
+//Problem Statement: Given a queue of integers, reverse the queue using a stack.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define Node for Queue
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+// Queue structure
+struct Queue {
+    struct Node *front, *rear;
+};
+
+// Stack structure (array implementation)
+struct Stack {
+    int top;
+    int capacity;
+    int* arr;
+};
+
+// Create Queue
+struct Queue* createQueue() {
+    struct Queue* q = (struct Queue*)malloc(sizeof(struct Queue));
+    q->front = q->rear = NULL;
+    return q;
+}
+
+// Enqueue
+void enqueue(struct Queue* q, int value) {
+    struct Node* temp = (struct Node*)malloc(sizeof(struct Node));
+    temp->data = value;
+    temp->next = NULL;
+
+    if (q->rear == NULL) {
+        q->front = q->rear = temp;
+        return;
+    }
+
+    q->rear->next = temp;
+    q->rear = temp;
+}
+
+// Dequeue
+int dequeue(struct Queue* q) {
+    if (q->front == NULL)
+        return -1;
+
+    struct Node* temp = q->front;
+    int value = temp->data;
+
+    q->front = q->front->next;
+    if (q->front == NULL)
+        q->rear = NULL;
+
+    free(temp);
+    return value;
+}
+
+// Create Stack
+struct Stack* createStack(int capacity) {
+    struct Stack* s = (struct Stack*)malloc(sizeof(struct Stack));
+    s->capacity = capacity;
+    s->top = -1;
+    s->arr = (int*)malloc(capacity * sizeof(int));
+    return s;
+}
+
+// Push
+void push(struct Stack* s, int value) {
+    s->arr[++s->top] = value;
+}
+
+// Pop
+int pop(struct Stack* s) {
+    return s->arr[s->top--];
+}
+
+// Reverse Queue using Stack
+void reverseQueue(struct Queue* q, int n) {
+    struct Stack* s = createStack(n);
+
+    // Step 1: Dequeue all elements and push to stack
+    while (q->front != NULL) {
+        push(s, dequeue(q));
+    }
+
+    // Step 2: Pop from stack and enqueue back
+    while (s->top != -1) {
+        enqueue(q, pop(s));
+    }
+}
+
+// Print Queue
+void printQueue(struct Queue* q) {
+    struct Node* temp = q->front;
+    while (temp != NULL) {
+        printf("%d ", temp->data);
+        temp = temp->next;
+    }
+}
+
+// Main
+int main() {
+    int N, value;
+    scanf("%d", &N);
+
+    struct Queue* q = createQueue();
+
+    // Input elements into queue
+    for (int i = 0; i < N; i++) {
+        scanf("%d", &value);
+        enqueue(q, value);
+    }
+
+    // Reverse queue
+    reverseQueue(q, N);
+
+    // Print reversed queue
+    printQueue(q);
+
+    return 0;
+}
