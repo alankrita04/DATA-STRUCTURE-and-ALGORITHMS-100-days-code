@@ -1,0 +1,145 @@
+//Problem Statement: Given a binary tree, print its vertical order traversal. Nodes that lie on the same vertical line should be printed together from top to bottom and from left to right.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Tree Node
+struct Node {
+    int data;
+    struct Node *left, *right;
+};
+
+// Create Node
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->left = newNode->right = NULL;
+    return newNode;
+}
+
+// Queue Node (for storing node + horizontal distance)
+struct QNode {
+    struct Node* node;
+    int hd;
+};
+
+struct Queue {
+    struct QNode arr[1000];
+    int front, rear;
+};
+
+void initQueue(struct Queue* q) {
+    q->front = q->rear = -1;
+}
+
+int isEmpty(struct Queue* q) {
+    return q->front == -1;
+}
+
+void enqueue(struct Queue* q, struct Node* node, int hd) {
+    if (q->rear == 999) return;
+    if (q->front == -1) q->front = 0;
+    q->arr[++q->rear].node = node;
+    q->arr[q->rear].hd = hd;
+}
+
+struct QNode dequeue(struct Queue* q) {
+    struct QNode temp = q->arr[q->front];
+    if (q->front == q->rear)
+        q->front = q->rear = -1;
+    else
+        q->front++;
+    return temp;
+}
+
+// Build Tree
+struct Node* buildTree(int arr[], int n) {
+    if (n == 0 || arr[0] == -1) return NULL;
+
+    struct Node* root = createNode(arr[0]);
+
+    struct Node* queue[1000];
+    int front = 0, rear = 0;
+
+    queue[rear++] = root;
+    int i = 1;
+
+    while (i < n) {
+        struct Node* curr = queue[front++];
+
+        if (arr[i] != -1) {
+            curr->left = createNode(arr[i]);
+            queue[rear++] = curr->left;
+        }
+        i++;
+
+        if (i < n && arr[i] != -1) {
+            curr->right = createNode(arr[i]);
+            queue[rear++] = curr->right;
+        }
+        i++;
+    }
+
+    return root;
+}
+
+// Vertical Order Traversal
+void verticalOrder(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Queue q;
+    initQueue(&q);
+
+    enqueue(&q, root, 0);
+
+    // To store result: HD range from -1000 to +1000
+    int map[2001][100];
+    int count[2001] = {0};
+
+    int offset = 1000; // shift for negative index
+    int minHD = 0, maxHD = 0;
+
+    while (!isEmpty(&q)) {
+        struct QNode temp = dequeue(&q);
+        struct Node* curr = temp.node;
+        int hd = temp.hd;
+
+        int index = hd + offset;
+
+        map[index][count[index]++] = curr->data;
+
+        if (hd < minHD) minHD = hd;
+        if (hd > maxHD) maxHD = hd;
+
+        if (curr->left)
+            enqueue(&q, curr->left, hd - 1);
+
+        if (curr->right)
+            enqueue(&q, curr->right, hd + 1);
+    }
+
+    // Print result
+    for (int i = minHD; i <= maxHD; i++) {
+        int index = i + offset;
+        for (int j = 0; j < count[index]; j++) {
+            printf("%d ", map[index][j]);
+        }
+        printf("\n");
+    }
+}
+
+// Main
+int main() {
+    int n;
+    scanf("%d", &n);
+
+    int arr[n];
+    for (int i = 0; i < n; i++)
+        scanf("%d", &arr[i]);
+
+    struct Node* root = buildTree(arr, n);
+
+    verticalOrder(root);
+
+    return 0;
+}
