@@ -1,0 +1,126 @@
+//Problem: Print topological ordering of a Directed Acyclic Graph (DAG) using DFS.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node for adjacency list
+struct Node {
+    int vertex;
+    struct Node* next;
+};
+
+// Graph structure
+struct Graph {
+    int numVertices;
+    struct Node** adjLists;
+    int* visited;
+};
+
+// Stack
+struct Stack {
+    int arr[1000];
+    int top;
+};
+
+// Stack functions
+void initStack(struct Stack* s) {
+    s->top = -1;
+}
+
+void push(struct Stack* s, int val) {
+    s->arr[++s->top] = val;
+}
+
+int pop(struct Stack* s) {
+    return s->arr[s->top--];
+}
+
+int isEmpty(struct Stack* s) {
+    return s->top == -1;
+}
+
+// Create node
+struct Node* createNode(int v) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->vertex = v;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Create graph
+struct Graph* createGraph(int vertices) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->numVertices = vertices;
+
+    graph->adjLists = (struct Node**)malloc(vertices * sizeof(struct Node*));
+    graph->visited = (int*)malloc(vertices * sizeof(int));
+
+    for (int i = 0; i < vertices; i++) {
+        graph->adjLists[i] = NULL;
+        graph->visited[i] = 0;
+    }
+
+    return graph;
+}
+
+// Add edge (directed)
+void addEdge(struct Graph* graph, int src, int dest) {
+    struct Node* newNode = createNode(dest);
+    newNode->next = graph->adjLists[src];
+    graph->adjLists[src] = newNode;
+}
+
+// DFS helper
+void topoDFS(struct Graph* graph, int v, struct Stack* s) {
+    graph->visited[v] = 1;
+
+    struct Node* temp = graph->adjLists[v];
+
+    while (temp) {
+        int adj = temp->vertex;
+
+        if (!graph->visited[adj]) {
+            topoDFS(graph, adj, s);
+        }
+        temp = temp->next;
+    }
+
+    // Push after visiting all neighbors
+    push(s, v);
+}
+
+// Topological Sort
+void topologicalSort(struct Graph* graph) {
+    struct Stack s;
+    initStack(&s);
+
+    for (int i = 0; i < graph->numVertices; i++) {
+        if (!graph->visited[i]) {
+            topoDFS(graph, i, &s);
+        }
+    }
+
+    // Print stack
+    while (!isEmpty(&s)) {
+        printf("%d ", pop(&s));
+    }
+}
+
+// Main
+int main() {
+    int n, m;
+    scanf("%d", &n);
+    scanf("%d", &m);
+
+    struct Graph* graph = createGraph(n);
+
+    int u, v;
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d", &u, &v);
+        addEdge(graph, u, v);
+    }
+
+    topologicalSort(graph);
+
+    return 0;
+}
