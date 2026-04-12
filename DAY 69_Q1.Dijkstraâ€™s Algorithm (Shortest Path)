@@ -1,0 +1,124 @@
+//Problem: Given weighted graph with non-negative edges, compute shortest path from source using priority queue.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define MAX 1000
+
+// Node for adjacency list
+struct Node {
+    int vertex, weight;
+    struct Node* next;
+};
+
+// Graph
+struct Graph {
+    int numVertices;
+    struct Node** adjLists;
+};
+
+// Min Heap Node
+struct HeapNode {
+    int vertex, dist;
+};
+
+// Create node
+struct Node* createNode(int v, int w) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->vertex = v;
+    newNode->weight = w;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Create graph
+struct Graph* createGraph(int vertices) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->numVertices = vertices;
+
+    graph->adjLists = (struct Node**)malloc(vertices * sizeof(struct Node*));
+    for (int i = 0; i < vertices; i++)
+        graph->adjLists[i] = NULL;
+
+    return graph;
+}
+
+// Add edge (directed)
+void addEdge(struct Graph* graph, int src, int dest, int weight) {
+    struct Node* newNode = createNode(dest, weight);
+    newNode->next = graph->adjLists[src];
+    graph->adjLists[src] = newNode;
+}
+
+// Simple priority queue (linear search)
+int extractMin(int dist[], int visited[], int n) {
+    int min = INT_MAX, min_index = -1;
+
+    for (int i = 0; i < n; i++) {
+        if (!visited[i] && dist[i] < min) {
+            min = dist[i];
+            min_index = i;
+        }
+    }
+    return min_index;
+}
+
+// Dijkstra Algorithm
+void dijkstra(struct Graph* graph, int src) {
+    int n = graph->numVertices;
+
+    int dist[MAX];
+    int visited[MAX];
+
+    for (int i = 0; i < n; i++) {
+        dist[i] = INT_MAX;
+        visited[i] = 0;
+    }
+
+    dist[src] = 0;
+
+    for (int i = 0; i < n - 1; i++) {
+        int u = extractMin(dist, visited, n);
+        visited[u] = 1;
+
+        struct Node* temp = graph->adjLists[u];
+
+        while (temp) {
+            int v = temp->vertex;
+            int weight = temp->weight;
+
+            if (!visited[v] && dist[u] != INT_MAX &&
+                dist[u] + weight < dist[v]) {
+                dist[v] = dist[u] + weight;
+            }
+            temp = temp->next;
+        }
+    }
+
+    // Print distances
+    for (int i = 0; i < n; i++) {
+        printf("%d ", dist[i]);
+    }
+}
+
+// Main
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    struct Graph* graph = createGraph(n);
+
+    int u, v, w;
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d %d", &u, &v, &w);
+        addEdge(graph, u, v, w);
+    }
+
+    int src;
+    scanf("%d", &src);
+
+    dijkstra(graph, src);
+
+    return 0;
+}
