@@ -1,0 +1,69 @@
+//Problem Statement : Given n boards of different lengths and k painters, each painter paints contiguous boards. Painting a unit length of board takes one unit of time.
+
+#include <stdio.h>
+
+// Check if boards can be painted within maxTime
+int isPossible(int arr[], int n, int k, int maxTime) {
+    int painters = 1;
+    int currentSum = 0;
+
+    for (int i = 0; i < n; i++) {
+        // If a single board is larger than maxTime → impossible
+        if (arr[i] > maxTime)
+            return 0;
+
+        if (currentSum + arr[i] <= maxTime) {
+            currentSum += arr[i];
+        } else {
+            painters++;
+            currentSum = arr[i];
+
+            if (painters > k)
+                return 0;
+        }
+    }
+    return 1;
+}
+
+// Function to find minimum time
+int minTime(int arr[], int n, int k) {
+    int left = 0, right = 0;
+
+    // Define search space
+    for (int i = 0; i < n; i++) {
+        right += arr[i];          // total length
+        if (arr[i] > left)
+            left = arr[i];        // largest board
+    }
+
+    int ans = right;
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+
+        if (isPossible(arr, n, k, mid)) {
+            ans = mid;        // possible → try smaller time
+            right = mid - 1;
+        } else {
+            left = mid + 1;   // not possible → increase time
+        }
+    }
+
+    return ans;
+}
+
+int main() {
+    int n, k;
+    scanf("%d %d", &n, &k);
+
+    int arr[n];
+
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &arr[i]);
+    }
+
+    int result = minTime(arr, n, k);
+    printf("%d\n", result);
+
+    return 0;
+}
